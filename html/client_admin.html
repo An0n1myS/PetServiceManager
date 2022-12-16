@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Use of JQuery to Add Edit Delete Table Row </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1> Clients </h1>
+  <form>
+    <div class="form-group">
+      <label>FIO:</label>
+      <input type="text" name="fio" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+      <label>Phone:</label>
+      <input type="text" name="phone" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="text" name="email" class="form-control"  required="">
+    </div>
+    <button type="submit" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table class="table table-bordered data-table">
+    <thead>
+      <th>FIO</th>
+      <th>Phone</th>
+      <th>Email</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    function addRow(id_client, fio, phone, email) {
+        $(".data-table tbody").append("<tr>"
+            +"<td hidden class='id_hidden'>"+id_client+"</td>"
+            +`<td data-type='fio' data-value='${fio}'>${fio}</td>
+            <td data-type='phone' data-value='${phone}'>${phone}</td>
+            <td data-type='email' data-value='${email}'>${email}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    }
+    function loadAllClients() {
+        $.get("/get_clients", (data) => {
+            data.forEach(element => {
+                addRow(element.id_client, element.fio, element.phone, element.email)
+            });
+        })
+    }
+    loadAllClients()
+    $("form").submit(function(e){
+        e.preventDefault();
+        let fio = $("input[name='fio']").val();
+        let phone = $("input[name='phone']").val();
+        let email = $("input[name='email']").val();
+
+        client = {
+            "fio": fio,
+            "phone": phone,
+            "email": email,
+        }
+        $.ajax({
+            type: "POST",
+            url: "/admin/client/0",
+            data: JSON.stringify(client),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                addRow(result.id_client, fio, phone, email)
+            }
+        });
+        $("input[name='fio']").val('');
+        $("input[name='phone']").val('');
+        $("input[name='email']").val('');
+    });
+
+    $("body").on("click", ".btn-delete", function(){
+        let tr = $(this).parents("tr");
+        let id = tr.find(".id_hidden").html();
+        $.ajax({
+            type: "DELETE",
+            url: "/admin/client/"+id,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        tr.remove();
+    });
+
+    $("body").on("click", ".btn-edit", function(){
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let fio_val = fio.html()
+        let phone_val = phone.html()
+        let email_val = email.html()
+        fio.html($("<input />").val(fio_val))
+        phone.html($("<input />").val(phone_val))
+        email.html($("<input />").val(email_val))
+        buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+    });
+
+    $("body").on("click", ".btn-cancel", function(){
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        fio.html(fio.data("value"));
+        phone.html(phone.data("value"));
+        email.html(email.data("value"));
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+
+    $("body").on("click", ".btn-update", function(){
+        let id_client = $(this).parents("tr").find(".id_hidden").html();
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        new_data = {
+            id_client: id_client,
+            fio: fio.children("input").val(),
+            phone: phone.children("input").val(),
+            email: email.children("input").val()
+        }
+        console.log(new_data)
+        $.ajax({
+            type: "UPDATE",
+            url: "/admin/client/"+id_client,
+            data: JSON.stringify(new_data),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        fio.html(fio.children("input").val())
+        phone.html(phone.children("input").val())
+        email.html(email.children("input").val())
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Use of JQuery to Add Edit Delete Table Row </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1> Animals </h1>
+  <form>
+    <div class="form-group">
+      <label>Name:</label>
+      <input type="text" name="name" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+      <label>age:</label>
+      <input type="text" name="age" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+        <label>sex:</label>
+        <input type="text" name="sex" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+    <label>breed_id_breed:</label>
+    <input type="text" name="breed_id_breed" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+    <label>client_id_client:</label>
+    <input type="text" name="client_id_client" class="form-control"  required="">
+    </div>
+    <button type="submit" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table class="table table-bordered data-table">
+    <thead>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Sex</th>
+      <th>Breed_id_breed</th>
+      <th>Client_id_client</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+</div>
+<script type="text/javascript">
+    function addRow(id_animal, name, age, sex, breed_id_breed,client_id_client) {
+        $(".data-table tbody").append("<tr>"
+            +"<td hidden class='id_hidden'>"+id_animal+"</td>"
+            +`<td data-type='name' data-value='${name}'>${name}</td>
+            <td data-type='age' data-value='${age}'>${age}</td>
+            <td data-type='sex' data-value='${sex}'>${sex}</td>
+            <td data-type='breed_id_breed' data-value='${breed_id_breed}'>${breed_id_breed}</td>
+            <td data-type='client_id_client' data-value='${client_id_client}'>${client_id_client}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    }
+
+    function loadAllAnimals() {
+        $.get("/get_animals", (data) => {
+            data.forEach(element => {
+                addRow(element.id_animal, element.name, element.age, element.sex, element.breed_id_breed, element.client_id_client)
+            });
+        })
+    }
+    loadAllAnimals()
+    $("form").submit(function(e){
+        e.preventDefault();
+        let name = $("input[name='name']").val();
+        let age = $("input[name='age']").val();
+        let sex = $("input[name='sex']").val();
+        let breed_id_breed = $("input[name='breed_id_breed']").val();
+        let client_id_client = $("input[name='client_id_client']").val();
+        animal = {
+            "name": name,
+            "age": age,
+            "sex": sex,
+            "breed_id_breed": breed_id_breed,
+            "client_id_client": client_id_client,
+        }
+        $.ajax({
+            type: "POST",
+            url: "/admin/animal/0",
+            data: JSON.stringify(animal),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                addRow(result.id_animal, name, age, sex, breed_id_breed,client_id_client)
+            }
+        });
+        $("input[name='name']").val('');
+        $("input[name='age']").val('');
+        $("input[name='sex']").val('');
+        $("input[name='breed_id_breed']").val('');
+        $("input[name='client_id_client']").val('');
+    });
+
+    $("body").on("click", ".btn-delete", function(){
+        let tr = $(this).parents("tr");
+        let id = tr.find(".id_hidden").html();
+        $.ajax({
+            type: "DELETE",
+            url: "/admin/animal/"+id,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        tr.remove();
+    });
+
+    $("body").on("click", ".btn-edit", function(){
+        let name = $(this).parents("tr").find('[data-type="name"]');
+        let age = $(this).parents("tr").find('[data-type="age"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let breed_id_breed = $(this).parents("tr").find('[data-type="breed_id_breed"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let name_val = name.html()
+        let age_val = age.html()
+        let sex_val = sex.html()
+        let breed_id_breed_val = breed_id_breed.html()
+        let client_id_client_val = client_id_client.html()
+        name.html($("<input />").val(name_val))
+        age.html($("<input />").val(age_val))
+        sex.html($("<input />").val(sex_val))
+        breed_id_breed.html($("<input />").val(breed_id_breed_val))
+        client_id_client.html($("<input />").val(client_id_client_val))
+        buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+    });
+
+    $("body").on("click", ".btn-cancel", function(){
+        let name = $(this).parents("tr").find('[data-type="name"]');
+        let age = $(this).parents("tr").find('[data-type="age"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let breed_id_breed = $(this).parents("tr").find('[data-type="breed_id_breed"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        name.html(name.data("value"));
+        age.html(age.data("value"));
+        sex.html(sex.data("value"));
+        breed_id_breed.html(breed_id_breed.data("value"));
+        client_id_client.html(client_id_client.data("value"));
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+
+    $("body").on("click", ".btn-update", function(){
+        let id_animal = $(this).parents("tr").find(".id_hidden").html();
+        let name = $(this).parents("tr").find('[data-type="name"]');
+        let age = $(this).parents("tr").find('[data-type="age"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let breed_id_breed = $(this).parents("tr").find('[data-type="breed_id_breed"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        new_data = {
+            id_animal: id_animal,
+            name: name.children("input").val(),
+            age: age.children("input").val(),
+            sex: sex.children("input").val(),
+            breed_id_breed: breed_id_breed.children("input").val(),
+            client_id_client: client_id_client.children("input").val(),
+        }
+        console.log(new_data)
+        $.ajax({
+            type: "UPDATE",
+            url: "/admin/animal/"+id_animal,
+            data: JSON.stringify(new_data),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        name.html(name.children("input").val())
+        age.html(age.children("input").val())
+        sex.html(sex.children("input").val())
+        breed_id_breed.html(breed_id_breed.children("input").val())
+        client_id_client.html(client_id_client.children("input").val())
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Use of JQuery to Add Edit Delete Table Row </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1> Posts </h1>
+  <form>
+    <div class="form-group">
+      <label>Title:</label>
+      <input type="text" name="title" class="form-control"  required="">
+    </div>
+    <button type="submit" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table class="table table-bordered data-table">
+    <thead>
+      <th>Title</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+</div>
+<script type="text/javascript">
+    function addRow(id_post, title) {
+        $(".data-table tbody").append("<tr>"
+            +"<td hidden class='id_hidden'>"+id_post+"</td>"
+            +`<td data-type='title' data-value='${title}'>${title}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    }
+
+    function loadAllPost() {
+        $.get("/get_posts", (data) => {
+            data.forEach(element => {
+                addRow(element.id_post, element.title)
+            });
+        })
+    }
+    loadAllPost()
+    $("form").submit(function(e){
+        e.preventDefault();
+        let title = $("input[name='title']").val();
+        post = {
+            "title": title,
+        }
+        $.ajax({
+            type: "POST",
+            url: "/admin/post/0",
+            data: JSON.stringify(post),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                addRow(result.id_post, title)
+            }
+        });
+        $("input[name='post']").val('');
+    });
+
+    $("body").on("click", ".btn-delete", function(){
+        let tr = $(this).parents("tr");
+        let id = tr.find(".id_hidden").html();
+        $.ajax({
+            type: "DELETE",
+            url: "/admin/post/"+id,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        tr.remove();
+    });
+
+    $("body").on("click", ".btn-edit", function(){
+        let title = $(this).parents("tr").find('[data-type="title"]');
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let title_val = title.html();
+
+        title.html($("<input />").val(title_val));
+        buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+    });
+
+    $("body").on("click", ".btn-cancel", function(){
+        let title = $(this).parents("tr").find('[data-type="title"]');
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let title_val = title.html();
+
+        title.html($("<input />").val(title_val));
+
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+
+    $("body").on("click", ".btn-update", function(){
+        let id_post = $(this).parents("tr").find(".id_hidden").html();
+        let title = $(this).parents("tr").find('[data-type="title"]');
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        new_data = {
+            id_post: id_post,
+            title: title.children("input").val(),
+
+        }
+        console.log(new_data)
+        $.ajax({
+            type: "UPDATE",
+            url: "/admin/post/"+id_post,
+            data: JSON.stringify(new_data),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        title.html(title.children("input").val())
+
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+</script>
+</body>
+</html>

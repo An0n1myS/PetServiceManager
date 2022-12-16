@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Use of JQuery to Add Edit Delete Table Row </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1> Workers </h1>
+  <form>
+    <div class="form-group">
+      <label>FIO:</label>
+      <input type="text" name="fio" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+      <label>Email:</label>
+      <input type="text" name="email" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+        <label>Phone:</label>
+        <input type="text" name="phone" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+    <label>Sex:</label>
+    <input type="text" name="sex" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+    <label>Post_id_post:</label>
+    <input type="text" name="post_id_post" class="form-control"  required="">
+    </div>
+    <button type="submit" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table class="table table-bordered data-table">
+    <thead>
+      <th>FIO</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Sex</th>
+      <th>Post_id_post</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+</div>
+<script type="text/javascript">
+    function addRow(id_worker, fio, email, phone, sex, post_id_post) {
+        $(".data-table tbody").append("<tr>"
+            +"<td hidden class='id_hidden'>"+id_worker+"</td>"
+            +`<td data-type='fio' data-value='${fio}'>${fio}</td>
+            <td data-type='email' data-value='${email}'>${email}</td>
+            <td data-type='phone' data-value='${phone}'>${phone}</td>
+            <td data-type='sex' data-value='${sex}'>${sex}</td>
+            <td data-type='post_id_post' data-value='${post_id_post}'>${post_id_post}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    }
+
+    function loadAllWorkers() {
+        $.get("/get_workers", (data) => {
+            data.forEach(element => {
+                addRow(element.id_worker, element.fio, element.email, element.phone, element.sex, element.post_id_post)
+            });
+        })
+    }
+    loadAllWorkers()
+    $("form").submit(function(e){
+        e.preventDefault();
+        let fio = $("input[name='fio']").val();
+        let email = $("input[name='email']").val();
+        let phone = $("input[name='phone']").val();
+        let sex = $("input[name='sex']").val();
+        let post_id_post = $("input[name='post_id_post']").val();
+        worker = {
+            "fio": fio,
+            "email": email,
+            "phone": phone,
+            "sex": sex,
+            "post_id_post": post_id_post,
+        }
+        $.ajax({
+            type: "POST",
+            url: "/admin/worker/0",
+            data: JSON.stringify(worker),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                addRow(result.id_worker, fio, email, phone, sex,post_id_post)
+            }
+        });
+        $("input[name='fio']").val('');
+        $("input[name='email']").val('');
+        $("input[name='phone']").val('');
+        $("input[name='sex']").val('');
+        $("input[name='post_id_post']").val('');
+    });
+
+    $("body").on("click", ".btn-delete", function(){
+        let tr = $(this).parents("tr");
+        let id = tr.find(".id_hidden").html();
+        $.ajax({
+            type: "DELETE",
+            url: "/admin/worker/"+id,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        tr.remove();
+    });
+
+    $("body").on("click", ".btn-edit", function(){
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let post_id_post = $(this).parents("tr").find('[data-type="post_id_post"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let fio_val = fio.html();
+        let email_val = email.html();
+        let phone_val = phone.html();
+        let sex_val = sex.html();
+        let post_id_post_val = post_id_post.html();
+        fio.html($("<input />").val(fio_val));
+        email.html($("<input />").val(email_val));
+        phone.html($("<input />").val(phone_val));
+        sex.html($("<input />").val(sex_val));
+        post_id_post.html($("<input />").val(post_id_post_val));
+        buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+    });
+
+    $("body").on("click", ".btn-cancel", function(){
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let post_id_post = $(this).parents("tr").find('[data-type="post_id_post"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let fio_val = fio.html();
+        let email_val = email.html();
+        let phone_val = phone.html();
+        let sex_val = sex.html();
+        let post_id_post_val = post_id_post.html();
+        fio.html($("<input />").val(fio_val));
+        email.html($("<input />").val(email_val));
+        phone.html($("<input />").val(phone_val));
+        sex.html($("<input />").val(sex_val));
+        post_id_post.html($("<input />").val(post_id_post_val));
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+
+    $("body").on("click", ".btn-update", function(){
+        let id_worker = $(this).parents("tr").find(".id_hidden").html();
+        let fio = $(this).parents("tr").find('[data-type="fio"]');
+        let email = $(this).parents("tr").find('[data-type="email"]');
+        let phone = $(this).parents("tr").find('[data-type="phone"]');
+        let sex = $(this).parents("tr").find('[data-type="sex"]');
+        let post_id_post = $(this).parents("tr").find('[data-type="post_id_post"]');
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        new_data = {
+            id_worker: id_worker,
+            fio: fio.children("input").val(),
+            email: email.children("input").val(),
+            phone: phone.children("input").val(),
+            sex: sex.children("input").val(),
+            post_id_post: post_id_post.children("input").val(),
+        }
+        console.log(new_data)
+        $.ajax({
+            type: "UPDATE",
+            url: "/admin/worker/"+id_worker,
+            data: JSON.stringify(new_data),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        fio.html(fio.children("input").val())
+        email.html(email.children("input").val())
+        phone.html(phone.children("input").val())
+        sex.html(sex.children("input").val())
+        post_id_post.html(post_id_post.children("input").val())
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+</script>
+</body>
+</html>

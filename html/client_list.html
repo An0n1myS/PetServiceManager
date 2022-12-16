@@ -1,0 +1,20 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">id_client</th>
+            <th scope="col">fio</th>
+            <th scope="col">phone</th>
+            <th scope="col">email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+            <tr>
+                <td>{{ client.id_animal }}</td>
+                <td>{{ client.fio }}</td>
+                <td>{{ client.phone }}</td>
+                <td>{{ client.email }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
