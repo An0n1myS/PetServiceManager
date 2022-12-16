@@ -328,6 +328,84 @@ def post(id_post):
     else:
         return jsonify({"status": deletePost(id_post)})
 
+#Breed
+def getBreeds():
+    breeds = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM dbo.breed")
+    for row in cursor.fetchall():
+        posts.append({"id_breed": row[0], "title": row[1]})
+    conn.close()
+    return breeds
+
+def getBreed(id_breed):
+    assert isinstance(id_breed, int)
+    breeds = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM dbo.breed where id_breed = {id_breed}")
+    for row in cursor.fetchall():
+        posts.append({"id_breed": row[0], "title": row[1]})
+    conn.close()
+    return breeds[0]
+
+def updateBreed(id_breed, title):
+    assert isinstance(id_breed, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE dbo.breed SET title='{title}' WHERE id_breed = {id_breed}")
+    conn.commit()
+    conn.close()
+    return True
+def insertBreed(title):
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT INTO dbo.breed (title) OUTPUT Inserted.id_breed VALUES " +
+        f"('{title}')")
+    id_breed = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return id_breed
+def deleteBreed(id_breed):
+    assert isinstance(id_breed, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"DELETE FROM dbo.breed WHERE id_breed={id_breed};")
+    conn.commit()
+    conn.close()
+    return True
+@app.route("/admin/breeds")
+def breeds_view():
+    breeds = getBreeds()
+    return render_template("breed_admin.html", breeds= breeds)
+
+@app.route("/breeds")
+def breeds_list():
+    breeds = getBreeds()
+    return render_template("breed_list.html", breeds = breeds)
+
+@app.route("/get_breeds", methods=["GET"])
+def breeds():
+    breeds = getBreeds()
+    return jsonify(breeds)
+
+
+@app.route("/admin/breed/<int:id_breed>", methods=["POST", "GET", "DELETE", "UPDATE"])
+def breed(id_breed):
+    if request.method == 'GET':
+        return jsonify(getBreed(id_breed))
+    elif request.method == 'POST':
+        form = request.get_json()
+        id_breed = insertBreed(form["title"])
+        return jsonify({"id_breed":id_breed})
+    elif request.method == 'UPDATE':
+        form = request.get_json()
+        id_breed = updateBreed(id_breed, form["title"])
+        return jsonify({"id_breed":id_breed})
+    else:
+        return jsonify({"status": deleteBreed(id_breed)})
+
 
 
 #All

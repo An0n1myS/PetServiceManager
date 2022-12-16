@@ -55,19 +55,15 @@
 <table class="table">
     <thead>
         <tr>
-            <th scope="col">id_client</th>
-            <th scope="col">fio</th>
-            <th scope="col">phone</th>
-            <th scope="col">email</th>
+            <th scope="col">id_breed</th>
+            <th scope="col">title</th>
         </tr>
     </thead>
     <tbody>
-        {% for client in clients %}
+        {% for breed in breeds %}
             <tr>
-                <td>{{ client.id_client }}</td>
-                <td>{{ client.fio }}</td>
-                <td>{{ client.phone }}</td>
-                <td>{{ client.email }}</td>
+                <td>{{ breed.id_breed }}</td>
+                <td>{{ breed.title }}</td>
             </tr>
         {% endfor %}
     </tbody>
