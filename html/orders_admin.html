@@ -73,7 +73,7 @@
   <form>
     <div class="form-group">
       <label>Date:</label>
-      <input type="date" name="date" class="form-control"  required="">
+      <input type="text" name="date" class="form-control"  required="">
     </div>
     <div class="form-group">
       <label>Service_id_service:</label>
@@ -128,7 +128,6 @@
             "date": date,
             "service_id_service": service_id_service,
             "client_id_client": client_id_client,
-
         }
         $.ajax({
             type: "POST",
@@ -164,7 +163,6 @@
         let date = $(this).parents("tr").find('[data-type="date"]');
         let service_id_service = $(this).parents("tr").find('[data-type="service_id_service"]');
         let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
-
 
         let buttons = $(this).parents("tr").find('[data-type="buttons"]');
         let date_val = date.html();

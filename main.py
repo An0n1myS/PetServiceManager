@@ -490,9 +490,9 @@ def getOrders():
     orders = []
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM dbo.order")
+    cursor.execute("SELECT * FROM dbo.[order]")
     for row in cursor.fetchall():
-        orders.append({"id_order": row[0], "date": row[1],  "service_id_service": row[2],"client_id_client": row[3]})
+        orders.append({"id_order": row[0], "date": row[1], "service_id_service": row[2],"client_id_client": row[3]})
     conn.close()
     return orders
 
@@ -501,7 +501,7 @@ def getOrder(id_order):
     orders = []
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM dbo.service where id_service = {id_order}")
+    cursor.execute(f"SELECT * FROM dbo.[order] where id_order = {id_order}")
     for row in cursor.fetchall():
         orders.append({"id_order": row[0], "date": row[1], "service_id_service": row[2], "client_id_client": row[3]})
     conn.close()
@@ -511,14 +511,14 @@ def updateOrder(id_order, date,service_id_service, client_id_client):
     assert isinstance(id_order, int)
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute(f"UPDATE dbo.order SET date='{date}',service_id_service='{service_id_service}',client_id_client='{client_id_client}' WHERE id_order = {id_order}")
+    cursor.execute(f"UPDATE dbo.[order] SET date='{date}',service_id_service='{service_id_service}',client_id_client='{client_id_client}' WHERE id_order = {id_order}")
     conn.commit()
     conn.close()
     return True
 def insertOrder(date,service_id_service, client_id_client):
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute(f"INSERT INTO dbo.order (date,service_id_service, client_id_client) OUTPUT Inserted.id_order VALUES " +
+    cursor.execute(f"INSERT INTO dbo.[order] (date,service_id_service, client_id_client) OUTPUT Inserted.id_order VALUES " +
         f"('{date}','{service_id_service}','{client_id_client}')")
     id_order = cursor.fetchone()[0]
     conn.commit()
@@ -528,19 +528,19 @@ def deleteOrder(id_order):
     assert isinstance(id_order, int)
     conn = connection()
     cursor = conn.cursor()
-    cursor.execute(f"DELETE FROM dbo.order WHERE id_order={id_order};")
+    cursor.execute(f"DELETE FROM dbo.[order] WHERE id_order={id_order};")
     conn.commit()
     conn.close()
     return True
 @app.route("/admin/orders")
 def orders_view():
     orders = getOrders()
-    return render_template("service_has_client_admin.html", orders= orders)
+    return render_template("orders_admin.html", orders= orders)
 
 @app.route("/orders")
 def orders_list():
     orders = getOrders()
-    return render_template("service_has_client_list.html", orders = orders)
+    return render_template("orders_list.html", orders = orders)
 
 @app.route("/get_orders", methods=["GET"])
 def orders():
