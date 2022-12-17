@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Use of JQuery to Add Edit Delete Table Row </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<style>
+    .table {
+      background: #f5ffff;
+      border-collapse: collapse;
+      text-align: left;
+      margin: auto;
+    }
+    .table th {
+      border-top: 1px solid #777777;
+      border-bottom: 1px solid #777777;
+      box-shadow: inset 0 1px 0 #999999, inset 0 -1px 0 #999999;
+      background: linear-gradient(#9595b6, #5a567f);
+      color: white;
+      padding: 10px 15px;
+      position: relative;
+    }
+    .table th:after {
+      content: "";
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 25%;
+      height: 25%;
+      width: 100%;
+      background: linear-gradient(rgba(255, 255, 255, 0), rgba(255,255,255,.08));
+    }
+    .table tr:nth-child(odd) {
+      background: #ebf3f9;
+    }
+    .table th:first-child {
+      border-left: 1px solid #777777;
+      border-bottom:  1px solid #777777;
+      box-shadow: inset 1px 1px 0 #999999, inset 0 -1px 0 #999999;
+    }
+    .table th:last-child {
+      border-right: 1px solid #777777;
+      border-bottom:  1px solid #777777;
+      box-shadow: inset -1px 1px 0 #999999, inset 0 -1px 0 #999999;
+    }
+    .table td {
+      border: 1px solid #e3eef7;
+      padding: 10px 15px;
+      position: relative;
+      transition: all 0.5s ease;
+    }
+    .table tbody:hover td {
+      color: transparent;
+      text-shadow: 0 0 3px #a09f9d;
+    }
+    .table tbody:hover tr:hover td {
+      color: #444444;
+      text-shadow: none;
+    }
+    .btn{
+      padding-top: 3px;
+      padding-bottom: 3px;
+      padding-left: 10px;
+      padding-right: 10px;
+      margin-left: 5px;
+      margin-right: 5px;
+    }
+</style>
+<body>
+<div class="container">
+  <h1> Orders </h1>
+  <form>
+    <div class="form-group">
+      <label>Date:</label>
+      <input type="date" name="date" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+      <label>Service_id_service:</label>
+      <input type="text" name="service_id_service" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+        <label>Client_id_client:</label>
+        <input type="text" name="client_id_client" class="form-control"  required="">
+    </div>
+    <button type="submit" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table class="table table-bordered data-table">
+    <thead>
+      <th>Date</th>
+      <th>Service_id_service</th>
+      <th>Client_id_client</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+</div>
+<script type="text/javascript">
+    function addRow(id_order, date,service_id_service, client_id_client) {
+        $(".data-table tbody").append("<tr>"
+            +"<td hidden class='id_hidden'>"+id_order+"</td>"
+            +`<td data-type='date' data-value='${date}'>${date}</td>
+            <td data-type='service_id_service' data-value='${service_id_service}'>${service_id_service}</td>
+            <td data-type='client_id_client' data-value='${client_id_client}'>${client_id_client}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    }
+
+    function loadAllOrders() {
+        $.get("/get_orders", (data) => {
+            data.forEach(element => {
+                addRow(element.id_order, element.date, element.service_id_service, element.client_id_client)
+            });
+        })
+    }
+    loadAllOrders()
+    $("form").submit(function(e){
+        e.preventDefault();
+        let date = $("input[name='date']").val();
+        let service_id_service = $("input[name='service_id_service']").val();
+        let client_id_client = $("input[name='client_id_client']").val();
+
+
+        order = {
+            "date": date,
+            "service_id_service": service_id_service,
+            "client_id_client": client_id_client,
+
+        }
+        $.ajax({
+            type: "POST",
+            url: "/admin/order/0",
+            data: JSON.stringify(order),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                addRow(result.id_order, date, service_id_service, client_id_client)
+            }
+        });
+        $("input[name='date']").val('');
+        $("input[name='service_id_service']").val('');
+        $("input[name='client_id_client']").val('');
+    });
+
+    $("body").on("click", ".btn-delete", function(){
+        let tr = $(this).parents("tr");
+        let id = tr.find(".id_hidden").html();
+        $.ajax({
+            type: "DELETE",
+            url: "/admin/order/"+id,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        tr.remove();
+    });
+
+    $("body").on("click", ".btn-edit", function(){
+        let date = $(this).parents("tr").find('[data-type="date"]');
+        let service_id_service = $(this).parents("tr").find('[data-type="service_id_service"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let date_val = date.html();
+        let service_id_service_val = service_id_service.html();
+        let client_id_client_val = client_id_client.html();
+
+
+        date.html($("<input />").val(date_val));
+        service_id_service.html($("<input />").val(service_id_service_val));
+        client_id_client.html($("<input />").val(client_id_client_val));
+
+        buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+    });
+
+    $("body").on("click", ".btn-cancel", function(){
+        let date = $(this).parents("tr").find('[data-type="date"]');
+        let service_id_service = $(this).parents("tr").find('[data-type="service_id_service"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        let date_val = date.html();
+        let service_id_service_val = service_id_service.html();
+        let client_id_client_val = client_id_client.html();
+
+        date.html($("<input />").val(date_val));
+        service_id_service.html($("<input />").val(service_id_service_val));
+        client_id_client.html($("<input />").val(client_id_client_val));
+
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+
+    $("body").on("click", ".btn-update", function(){
+        let id_order = $(this).parents("tr").find(".id_hidden").html();
+        let date = $(this).parents("tr").find('[data-type="date"]');
+        let service_id_service = $(this).parents("tr").find('[data-type="service_id_service"]');
+        let client_id_client = $(this).parents("tr").find('[data-type="client_id_client"]');
+
+        let buttons = $(this).parents("tr").find('[data-type="buttons"]');
+        new_data = {
+            id_order: id_order,
+            date: date.children("input").val(),
+            service_id_service: service_id_service.children("input").val(),
+            client_id_client: client_id_client.children("input").val(),
+        }
+        console.log(new_data)
+        $.ajax({
+            type: "UPDATE",
+            url: "/admin/order/"+id_order,
+            data: JSON.stringify(new_data),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(result) {
+                console.log(result)
+            }
+        });
+        date.html(date.children("input").val())
+        service_id_service.html(service_id_service.children("input").val())
+        client_id_client.html(client_id_client.children("input").val())
+
+        buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
+    });
+</script>
+</body>
+</html>

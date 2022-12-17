@@ -485,6 +485,85 @@ def service(id_service):
     else:
         return jsonify({"status": deleteService(id_service)})
 
+#Service_has_client(order)
+def getOrders():
+    orders = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM dbo.order")
+    for row in cursor.fetchall():
+        orders.append({"id_order": row[0], "date": row[1],  "service_id_service": row[2],"client_id_client": row[3]})
+    conn.close()
+    return orders
+
+def getOrder(id_order):
+    assert isinstance(id_order, int)
+    orders = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM dbo.service where id_service = {id_order}")
+    for row in cursor.fetchall():
+        orders.append({"id_order": row[0], "date": row[1], "service_id_service": row[2], "client_id_client": row[3]})
+    conn.close()
+    return orders[0]
+
+def updateOrder(id_order, date,service_id_service, client_id_client):
+    assert isinstance(id_order, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE dbo.order SET date='{date}',service_id_service='{service_id_service}',client_id_client='{client_id_client}' WHERE id_order = {id_order}")
+    conn.commit()
+    conn.close()
+    return True
+def insertOrder(date,service_id_service, client_id_client):
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT INTO dbo.order (date,service_id_service, client_id_client) OUTPUT Inserted.id_order VALUES " +
+        f"('{date}','{service_id_service}','{client_id_client}')")
+    id_order = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return id_order
+def deleteOrder(id_order):
+    assert isinstance(id_order, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"DELETE FROM dbo.order WHERE id_order={id_order};")
+    conn.commit()
+    conn.close()
+    return True
+@app.route("/admin/orders")
+def orders_view():
+    orders = getOrders()
+    return render_template("service_has_client_admin.html", orders= orders)
+
+@app.route("/orders")
+def orders_list():
+    orders = getOrders()
+    return render_template("service_has_client_list.html", orders = orders)
+
+@app.route("/get_orders", methods=["GET"])
+def orders():
+    orders = getOrders()
+    return jsonify(orders)
+
+
+@app.route("/admin/order/<int:id_order>", methods=["POST", "GET", "DELETE", "UPDATE"])
+def order(id_order):
+    if request.method == 'GET':
+        return jsonify(getOrder(id_order))
+    elif request.method == 'POST':
+        form = request.get_json()
+        id_order = insertOrder(form["date"], form["service_id_service"], form["client_id_client"])
+        return jsonify({"id_order":id_order})
+    elif request.method == 'UPDATE':
+        form = request.get_json()
+        id_order = updateOrder(id_order, form["date"], form["service_id_service"], form["client_id_client"])
+        return jsonify({"id_order":id_order})
+    else:
+        return jsonify({"status": deleteOrder(id_order)})
+
+
 
 
 #All
