@@ -335,7 +335,7 @@ def getBreeds():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM dbo.breed")
     for row in cursor.fetchall():
-        posts.append({"id_breed": row[0], "title": row[1]})
+        breeds.append({"id_breed": row[0], "title": row[1]})
     conn.close()
     return breeds
 
@@ -346,7 +346,7 @@ def getBreed(id_breed):
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM dbo.breed where id_breed = {id_breed}")
     for row in cursor.fetchall():
-        posts.append({"id_breed": row[0], "title": row[1]})
+        breeds.append({"id_breed": row[0], "title": row[1]})
     conn.close()
     return breeds[0]
 
@@ -405,6 +405,85 @@ def breed(id_breed):
         return jsonify({"id_breed":id_breed})
     else:
         return jsonify({"status": deleteBreed(id_breed)})
+
+#Service
+def getServices():
+    services = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM dbo.service")
+    for row in cursor.fetchall():
+        services.append({"id_service": row[0], "title": row[1],  "price": row[2],"worker_id_worker": row[3],"worker_post_id_post": row[4]})
+    conn.close()
+    return services
+
+def getService(id_service):
+    assert isinstance(id_service, int)
+    services = []
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM dbo.service where id_service = {id_service}")
+    for row in cursor.fetchall():
+        services.append({"id_service": row[0], "title": row[1], "price": row[2], "worker_id_worker": row[3], "worker_post_id_post": row[4]})
+    conn.close()
+    return services[0]
+
+def updateService(id_service, title,price, worker_id_worker, worker_post_id_post):
+    assert isinstance(id_service, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE dbo.service SET title='{title}',price='{price}',worker_id_worker='{worker_id_worker}',worker_post_id_post='{worker_post_id_post}' WHERE id_service = {id_service}")
+    conn.commit()
+    conn.close()
+    return True
+def insertService(title,price, worker_id_worker, worker_post_id_post):
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT INTO dbo.service (title,price, worker_id_worker, worker_post_id_post) OUTPUT Inserted.id_service VALUES " +
+        f"('{title}','{price}','{worker_id_worker}','{worker_post_id_post}')")
+    id_service = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return id_service
+def deleteService(id_service):
+    assert isinstance(id_service, int)
+    conn = connection()
+    cursor = conn.cursor()
+    cursor.execute(f"DELETE FROM dbo.service WHERE id_service={id_service};")
+    conn.commit()
+    conn.close()
+    return True
+@app.route("/admin/services")
+def services_view():
+    services = getServices()
+    return render_template("service_admin.html", services= services)
+
+@app.route("/services")
+def services_list():
+
+    services = getServices()
+    return render_template("service_list.html", services = services)
+
+@app.route("/get_services", methods=["GET"])
+def services():
+    services = getServices()
+    return jsonify(services)
+
+
+@app.route("/admin/service/<int:id_service>", methods=["POST", "GET", "DELETE", "UPDATE"])
+def service(id_service):
+    if request.method == 'GET':
+        return jsonify(getService(id_service))
+    elif request.method == 'POST':
+        form = request.get_json()
+        id_service = insertService(form["title"], form["price"], form["worker_id_worker"], form["worker_post_id_post"])
+        return jsonify({"id_service":id_service})
+    elif request.method == 'UPDATE':
+        form = request.get_json()
+        id_service = updateService(id_service, form["title"], form["price"], form["worker_id_worker"], form["worker_post_id_post"])
+        return jsonify({"id_service":id_service})
+    else:
+        return jsonify({"status": deleteService(id_service)})
 
 
 

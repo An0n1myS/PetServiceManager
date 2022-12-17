@@ -69,11 +69,23 @@
 </style>
 <body>
 <div class="container">
-  <h1> Breeds </h1>
+  <h1> Services </h1>
   <form>
     <div class="form-group">
       <label>Title:</label>
       <input type="text" name="title" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+      <label>Price:</label>
+      <input type="text" name="price" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+        <label>Worker_id_worker:</label>
+        <input type="text" name="worker_id_worker" class="form-control"  required="">
+    </div>
+    <div class="form-group">
+    <label>Worker_post_id_post:</label>
+    <input type="text" name="worker_post_id_post" class="form-control"  required="">
     </div>
     <button type="submit" class="btn btn-success save-btn">Save</button>
   </form>
@@ -81,6 +93,9 @@
   <table class="table table-bordered data-table">
     <thead>
       <th>Title</th>
+      <th>Price</th>
+      <th>Worker_id_worker</th>
+      <th>Worker_post_id_post</th>
       <th width="200px">Action</th>
     </thead>
     <tbody>
@@ -90,38 +105,51 @@
 
 </div>
 <script type="text/javascript">
-    function addRow(id_breed, title) {
+    function addRow(id_service, title, price, worker_id_worker, worker_post_id_post) {
         $(".data-table tbody").append("<tr>"
-            +"<td hidden class='id_hidden'>"+id_breed+"</td>"
-            +`<td data-type='title' data-value='${title}'>${title}</td>`
-            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button>&nbsp &nbsp &nbsp<button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+            +"<td hidden class='id_hidden'>"+id_service+"</td>"
+            +`<td data-type='title' data-value='${title}'>${title}</td>
+            <td data-type='price' data-value='${price}'>${price}</td>
+            <td data-type='worker_id_worker' data-value='${worker_id_worker}'>${worker_id_worker}</td>
+            <td data-type='worker_post_id_post' data-value='${worker_post_id_post}'>${worker_post_id_post}</td>`
+            +"<td data-type='buttons'><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
     }
 
-    function loadAllBreed() {
-        $.get("/get_breeds", (data) => {
+    function loadAllServices() {
+        $.get("/get_services", (data) => {
             data.forEach(element => {
-                addRow(element.id_breed, element.title)
+                addRow(element.id_service, element.title, element.price, element.worker_id_worker, element.worker_post_id_post)
             });
         })
     }
-    loadAllBreed()
+    loadAllServices()
     $("form").submit(function(e){
         e.preventDefault();
         let title = $("input[name='title']").val();
-        breed = {
+        let price = $("input[name='price']").val();
+        let worker_id_worker = $("input[name='worker_id_worker']").val();
+        let worker_post_id_post = $("input[name='worker_post_id_post']").val();
+
+        service = {
             "title": title,
+            "price": price,
+            "worker_id_worker": worker_id_worker,
+            "worker_post_id_post": worker_post_id_post,
         }
         $.ajax({
             type: "POST",
-            url: "/admin/breed/0",
-            data: JSON.stringify(breed),
+            url: "/admin/service/0",
+            data: JSON.stringify(service),
             contentType: "application/json",
             dataType: 'json',
             success: function(result) {
-                addRow(result.id_breed, title)
+                addRow(result.id_service, title, price, worker_id_worker, worker_post_id_post)
             }
         });
-        $("input[name='breed']").val('');
+        $("input[name='title']").val('');
+        $("input[name='price']").val('');
+        $("input[name='worker_id_worker']").val('');
+        $("input[name='worker_post_id_post']").val('');
     });
 
     $("body").on("click", ".btn-delete", function(){
@@ -129,7 +157,7 @@
         let id = tr.find(".id_hidden").html();
         $.ajax({
             type: "DELETE",
-            url: "/admin/breed/"+id,
+            url: "/admin/service/"+id,
             contentType: "application/json",
             dataType: 'json',
             success: function(result) {
@@ -141,39 +169,62 @@
 
     $("body").on("click", ".btn-edit", function(){
         let title = $(this).parents("tr").find('[data-type="title"]');
+        let price = $(this).parents("tr").find('[data-type="price"]');
+        let worker_id_worker = $(this).parents("tr").find('[data-type="worker_id_worker"]');
+        let worker_post_id_post = $(this).parents("tr").find('[data-type="worker_post_id_post"]');
 
         let buttons = $(this).parents("tr").find('[data-type="buttons"]');
         let title_val = title.html();
+        let price_val = price.html();
+        let worker_id_worker_val = worker_id_worker.html();
+        let worker_post_id_post_val = worker_post_id_post.html();
 
         title.html($("<input />").val(title_val));
+        price.html($("<input />").val(price_val));
+        worker_id_worker.html($("<input />").val(worker_id_worker_val));
+        worker_post_id_post.html($("<input />").val(worker_post_id_post_val));
         buttons.html("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
     });
 
     $("body").on("click", ".btn-cancel", function(){
         let title = $(this).parents("tr").find('[data-type="title"]');
+        let price = $(this).parents("tr").find('[data-type="price"]');
+        let worker_id_worker = $(this).parents("tr").find('[data-type="worker_id_worker"]');
+        let worker_post_id_post = $(this).parents("tr").find('[data-type="worker_post_id_post"]');
 
         let buttons = $(this).parents("tr").find('[data-type="buttons"]');
         let title_val = title.html();
+        let price_val = price.html();
+        let worker_id_worker_val = worker_id_worker.html();
+        let worker_post_id_post_val = worker_post_id_post.html();
 
         title.html($("<input />").val(title_val));
-
+        price.html($("<input />").val(price_val));
+        worker_id_worker.html($("<input />").val(worker_id_worker_val));
+        worker_post_id_post.html($("<input />").val(worker_post_id_post_val));
         buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
     });
 
     $("body").on("click", ".btn-update", function(){
-        let id_breed = $(this).parents("tr").find(".id_hidden").html();
+        let id_service = $(this).parents("tr").find(".id_hidden").html();
         let title = $(this).parents("tr").find('[data-type="title"]');
+        let price = $(this).parents("tr").find('[data-type="price"]');
+        let worker_id_worker = $(this).parents("tr").find('[data-type="worker_id_worker"]');
+        let worker_post_id_post = $(this).parents("tr").find('[data-type="worker_post_id_post"]');
 
         let buttons = $(this).parents("tr").find('[data-type="buttons"]');
         new_data = {
-            id_breed: id_breed,
+            id_service: id_service,
             title: title.children("input").val(),
+            price: price.children("input").val(),
+            worker_id_worker: worker_id_worker.children("input").val(),
+            worker_post_id_post: worker_post_id_post.children("input").val(),
 
         }
         console.log(new_data)
         $.ajax({
             type: "UPDATE",
-            url: "/admin/breed/"+id_breed,
+            url: "/admin/service/"+id_service,
             data: JSON.stringify(new_data),
             contentType: "application/json",
             dataType: 'json',
@@ -182,6 +233,9 @@
             }
         });
         title.html(title.children("input").val())
+        price.html(price.children("input").val())
+        worker_id_worker.html(worker_id_worker.children("input").val())
+        worker_post_id_post.html(worker_post_id_post.children("input").val())
 
         buttons.html("<button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button>")
     });
