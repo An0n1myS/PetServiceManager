@@ -66,8 +66,55 @@
       margin-left: 5px;
       margin-right: 5px;
     }
+    header{
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 20px;
+        width: 100%;
+
+    }
+    h1{
+        text-align: center;
+    }
+    .menu{
+
+    }
+
+    .menu-items{
+        display: flex;
+        flex-direction: row;
+        justify-content:space-evenly;
+    }
+    .menu-item{
+
+    }
+    a{
+        text-decoration: none;
+        color: black;
+        font-size: 20px;
+    }
+    a:hover{
+        text-decoration: none;
+        color: blue;
+        font-size: 21px;
+    }
 </style>
 <body>
+<header>
+    <div class="menu">
+        <h1>Перукарня для тварин</h1>
+        <div class="menu-items">
+            <div class="menu-item"><a href="/animals">Animal</a></div>
+            <div class="menu-item"><a href="/breeds">Breed</a></div>
+            <div class="menu-item"><a href="/clients">Client</a></div>
+            <div class="menu-item"><a href="/services">Service</a></div>
+            <div class="menu-item"><a href="/orders">Order</a></div>
+            <div class="menu-item"><a href="/workers">Worker</a></div>
+            <div class="menu-item"><a href="/posts">Post</a></div>
+        </div>
+    </div>
+</header>
 <div class="container">
   <h1> Posts </h1>
   <form>
