@@ -69,7 +69,7 @@ Create the necessary tables in your Microsoft SQL Server database using the prov
 Start the Flask application by running the following command in the project directory:
 
 ```bash
-python app.py
+python main.py
 ```
 
 
