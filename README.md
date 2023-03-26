@@ -16,14 +16,6 @@ A web application to manage a pet service business using Python, Flask, and Pyod
 - Seamless connection to the MS SQL Server database using Pyodbc
 - Smooth user interactions enabled by JavaScript and jQuery
 
-How to install:
-
-1) git clone https://github.com/An0n1myS/Template_db_ajax_interface.git
-
-2) cd Template_db_ajax_interface
-
-3) pip install -r requirements.txt
-
 # Installation Process
 
 Follow these steps to set up the PetServiceManager project on your local machine.
@@ -39,7 +31,7 @@ Follow these steps to set up the PetServiceManager project on your local machine
 Clone the PetServiceManager repository to your local machine using the following command:
 
 ```bash
-git clone https://github.com/yourusername/PetServiceManager.git
+git clone https://github.com/An0n1myS/PetServiceManager.git
 ```
 
 ##  Step 2: Install Dependencies
